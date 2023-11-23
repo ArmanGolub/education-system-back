@@ -21,7 +21,7 @@ exports.registration = asyncHandler(async (req, res, next) => {
     return res.json({ success: true, data: userData });
 })
 
-exports.login = asyncHandler(async (req, res,next) => {
+exports.login = asyncHandler(async (req, res, next) => {
     const requestUser = req.body;
     const userData = await AuthService.login(requestUser);
     res.cookie('refreshToken', userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
@@ -45,10 +45,12 @@ exports.refresh = asyncHandler(async (req, res, next) => {
     return res.json({ success: true, data: userData });
 })
 
-exports.me = async (req, res) => {
-    const user = await User.findByPk(req.user.id);
-
+exports.me = asyncHandler(async (req, res, next) => {
+    const user = await User.findByPk(req.body.id);
+    // const userData = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    if (!user) {
+        next({success: false, message: "User not found"})
+    }
     const userData = new UserDto(user)
-  
     res.status(200).json({ success: true, data: userData });
-  };
+})
